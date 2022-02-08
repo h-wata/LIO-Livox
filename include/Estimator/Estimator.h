@@ -251,6 +251,7 @@ private:
 	pcl::VoxelGrid<PointType> downSizeFilterNonFeature;
 	std::mutex mtx_Map;
 	std::thread threadMap;
+	std::string pcl_savefile;
 
 	pcl::KdTreeFLANN<PointType> CornerKdMap[10000];
 	pcl::KdTreeFLANN<PointType> SurfKdMap[10000];

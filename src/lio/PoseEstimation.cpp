@@ -1,4 +1,7 @@
 #include "Estimator/Estimator.h"
+#include <iomanip>
+#include <pcl-1.8/pcl/common/io.h>
+#include <pcl-1.8/pcl/io/pcd_io.h>
 typedef pcl::PointXYZINormal PointType;
 
 int WINDOWSIZE;
@@ -365,6 +368,8 @@ bool TryMAPInitialization() {
 void process(){
   double time_last_lidar = -1;
   double time_curr_lidar = -1;
+  char str[100];
+  std::string pcl_savefile;
   Eigen::Matrix3d delta_Rl = Eigen::Matrix3d::Identity();
   Eigen::Vector3d delta_tl = Eigen::Vector3d::Zero();
 	Eigen::Matrix3d delta_Rb = Eigen::Matrix3d::Identity();
@@ -506,11 +511,15 @@ void process(){
       for (int i = 0; i < laserCloudFullResNum; i++) {
         PointType temp_point;
         MAP_MANAGER::pointAssociateToMap(&lidar_list->front().laserCloud->points[i], &temp_point, transformTobeMapped);
-        laserCloudAfterEstimate->push_back(temp_point);
+        // laserCloudAfterEstimate->push_back(temp_point);
+        laserCloudAfterEstimate->push_back(lidar_list->front().laserCloud->points[i]);
       }
       sensor_msgs::PointCloud2 laserCloudMsg;
       pcl::toROSMsg(*laserCloudAfterEstimate, laserCloudMsg);
-      laserCloudMsg.header.frame_id = "/world";
+      std::sprintf(str, "%.9f", lidar_list->front().timeStamp);
+      pcl_savefile = std::string("/tmp/pcds/") + str + std::string(".pcd");
+      pcl::io::savePCDFileBinary(pcl_savefile, *laserCloudAfterEstimate);
+      laserCloudMsg.header.frame_id = "/livox_frame";
       laserCloudMsg.header.stamp.fromSec(lidar_list->front().timeStamp);
       pubFullLaserCloud.publish(laserCloudMsg);
 
@@ -569,7 +578,6 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "PoseEstimation");
   ros::NodeHandle nodeHandler("~");
-
   ros::param::get("~filter_parameter_corner",filter_parameter_corner);
   ros::param::get("~filter_parameter_surf",filter_parameter_surf);
   ros::param::get("~IMU_Mode",IMU_Mode);

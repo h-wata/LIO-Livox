@@ -81,7 +81,7 @@ public:
     const double acc_w = 2.0e-4;
     const double gyr_w = 2.0e-5;
 		constexpr static const double lidar_m = 1.5e-3;
-    constexpr static const double gnorm = 9.805;
+    constexpr static const double gnorm = 1;
 
     enum JacobianOrder
     {
